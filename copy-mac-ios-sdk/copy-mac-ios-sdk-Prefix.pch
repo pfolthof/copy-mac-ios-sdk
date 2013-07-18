@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'copy-mac-ios-sdk' target in the 'copy-mac-ios-sdk' project
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+#endif
