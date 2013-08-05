@@ -1,7 +1,7 @@
 copy-mac-ios-sdk
 ================
 
-Object-C API for www.copy.com (Mac and iOS), derived from code written for the iOS App Cloud Commander (www.cloud-cdr.com).
+Object-C API for www.copy.com (Mac and iOS), derived from code written for the iOS Drag & Drop 2-Panel File Management App Cloud Commander (www.cloud-cdr.com).
 
 The library is based on Mac OS 10.8 or iOS 6.1, using GCD Blocks and ARC. Currently the library does not use any third party libraries.
 
