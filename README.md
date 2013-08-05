@@ -19,7 +19,7 @@ On the Mac:
 #import <CopySDK/CopySDK.h>
 ```
 
-Declaring a property to keep the COCopyClient alive:
+Declare a property to keep the COCopyClient alive:
 ``` Objective-C
 @property COCopyClient *theCopyClient;
 ```
