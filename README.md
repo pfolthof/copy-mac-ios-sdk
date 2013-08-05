@@ -7,6 +7,8 @@ The library is based on Mac OS 10.8 or iOS 6.1, using GCD Blocks and ARC. Curren
 
 Opening copy-mac-ios-sdk.xcworkspace in XCode will show the two demo projects DemoMobile (for iOS) and DemoMac as well as the library project CopySDK.
 
+For detailed documentation of the www.copy.com API, please visit https://www.copy.com/developer/documentation.
+
 To use the Copy SDK in your projects:
 
 On iOS:
