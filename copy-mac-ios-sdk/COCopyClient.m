@@ -18,15 +18,15 @@
 #import "NSString+URLEncoding.h"
 
 
+#error follow these steps and fill in the COPY_CONSUMER_KEY and COPY_SECRET, then remove this line
 
-#warning follow these steps and fill in the COPY_CONSUMER_KEY and COPY_SECRET, then remove this line
-#define COPY_CONSUMER_KEY Copy_API_Key() //Defined in .pch file
-#define COPY_SECRET Copy_API_Secret() //Defined in .pch file
 // 1. create a www.copy.com user account (if you do not already have one): https://www.copy.com/signup/
 // 2. create a developer account: https://www.copy.com/developer/signup/
 // 3. create an application: https://www.copy.com/developer/create/
 // 4. replace <consumer key> and <secret>
 
+#define COPY_CONSUMER_KEY @"<consumer key>"
+#define COPY_SECRET @"<secret>"
 
 
 // oAuth callback URL to be recognized on successful authorization
