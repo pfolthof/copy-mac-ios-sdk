@@ -25,4 +25,10 @@
 - (NSDictionary *)scopeDictionary;
 - (NSString *)scopeJSON;
 
+- (void)grantAllPermissions;
+
+- (id)initWithAllPermissions;
+
++ (id)scopeAllPermissions;
+
 @end
