@@ -68,6 +68,13 @@ typedef enum {
                 toPath:(NSString *)path withProgressBlock:(void (^)(long long uploadedSoFar, long long contentLength))progressBlock
     andCompletionBlock:(void (^)(BOOL success, NSError *error, NSDictionary *fileInfo))completionBlock;
 
+
+- (void)cancellableUploadFromFilePath:(NSString *)filePath
+                toRemotePath:(NSString *)path withProgressBlock:(void (^)(long long uploadedSoFar, long long contentLength))progressBlock
+    andCompletionBlock:(void (^)(BOOL success, NSError *error, NSDictionary *fileInfo))completionBlock;
+
+-(void)cancelCurrentUpload;
+
 // create folder
 
 - (void)createFolder:(NSString *)path
