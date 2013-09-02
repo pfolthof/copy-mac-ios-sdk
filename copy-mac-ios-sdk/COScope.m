@@ -30,4 +30,33 @@
     return [[NSString alloc] initWithData:[NSJSONSerialization dataWithJSONObject:self.scopeDictionary options:0 error:nil] encoding:NSUTF8StringEncoding];
 }
 
+- (void)grantAllPermissions {
+    self.profile_write = YES;
+    self.profile_read = YES;
+    self.profile_email_read = YES;
+    self.inbox_read = YES;
+    self.links_read = YES;
+    self.links_write = YES;
+    self.filesystem_read = YES;
+    self.filesystem_write = YES;
+}
+
+- (id)initWithAllPermissions {
+    if (self = [super init]) {
+        self.profile_write = YES;
+        self.profile_read = YES;
+        self.profile_email_read = YES;
+        self.inbox_read = YES;
+        self.links_read = YES;
+        self.links_write = YES;
+        self.filesystem_read = YES;
+        self.filesystem_write = YES;
+    }
+    return self;
+}
+
++ (id)scopeAllPermissions {
+    return [[[self class]alloc]initWithAllPermissions];
+}
+
 @end
