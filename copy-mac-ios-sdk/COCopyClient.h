@@ -61,7 +61,7 @@ typedef enum {
 - (void)requestActivityForPath:(NSString *)path modifiedTime:(NSNumber *)modifiedTime
            withCompletionBlock:(void (^)(BOOL success, NSError *error, NSDictionary *activityInfo))completionBlock;
 
-// download / upload - to cancel, the send the cancel message to the returned CODownload / COUpload
+// download / upload - to cancel, send the cancel message to the returned CODownload / COUpload
 
 - (CODownload *)downloadPath:(NSString *)path
           toFilePath:(NSString *)toFilePath

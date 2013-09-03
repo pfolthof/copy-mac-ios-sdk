@@ -11,7 +11,7 @@
 		860FEDD21797E802000D0714 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 860FEDD01797E802000D0714 /* InfoPlist.strings */; };
 		860FEE031797EA05000D0714 /* COCopyClient.h in Headers */ = {isa = PBXBuildFile; fileRef = 860FEE011797EA05000D0714 /* COCopyClient.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		860FEE041797EA05000D0714 /* COCopyClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 860FEE021797EA05000D0714 /* COCopyClient.m */; };
-		865D08C017ABB9C100A1A5E8 /* COUpload.h in Headers */ = {isa = PBXBuildFile; fileRef = 865D08BE17ABB9C100A1A5E8 /* COUpload.h */; };
+		865D08C017ABB9C100A1A5E8 /* COUpload.h in Headers */ = {isa = PBXBuildFile; fileRef = 865D08BE17ABB9C100A1A5E8 /* COUpload.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		865D08C117ABB9C100A1A5E8 /* COUpload.m in Sources */ = {isa = PBXBuildFile; fileRef = 865D08BF17ABB9C100A1A5E8 /* COUpload.m */; };
 		865D08ED17AC26B900A1A5E8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 865D08EC17AC26B900A1A5E8 /* Foundation.framework */; };
 		865D08F817AC26C300A1A5E8 /* COCopyClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 860FEE021797EA05000D0714 /* COCopyClient.m */; };
@@ -30,7 +30,7 @@
 		8699E13317A7E2CC00EB2312 /* CopySDK.h in Headers */ = {isa = PBXBuildFile; fileRef = 8699E13217A7E2CC00EB2312 /* CopySDK.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8699E13817A7E7B200EB2312 /* NSString+URLEncoding.h in Headers */ = {isa = PBXBuildFile; fileRef = 8699E13617A7E7B200EB2312 /* NSString+URLEncoding.h */; settings = {ATTRIBUTES = (); }; };
 		8699E13917A7E7B200EB2312 /* NSString+URLEncoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 8699E13717A7E7B200EB2312 /* NSString+URLEncoding.m */; };
-		8699E15117AA8F8800EB2312 /* CODownload.h in Headers */ = {isa = PBXBuildFile; fileRef = 8699E14F17AA8F8700EB2312 /* CODownload.h */; };
+		8699E15117AA8F8800EB2312 /* CODownload.h in Headers */ = {isa = PBXBuildFile; fileRef = 8699E14F17AA8F8700EB2312 /* CODownload.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8699E15217AA8F8800EB2312 /* CODownload.m in Sources */ = {isa = PBXBuildFile; fileRef = 8699E15017AA8F8700EB2312 /* CODownload.m */; };
 /* End PBXBuildFile section */
 
