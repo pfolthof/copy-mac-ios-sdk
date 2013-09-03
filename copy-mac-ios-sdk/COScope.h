@@ -22,13 +22,13 @@
 @property BOOL filesystem_read;
 @property BOOL filesystem_write;
 
++ (id)scopeAllPermissions;
+
 - (NSDictionary *)scopeDictionary;
 - (NSString *)scopeJSON;
 
 - (void)grantAllPermissions;
 
 - (id)initWithAllPermissions;
-
-+ (id)scopeAllPermissions;
 
 @end

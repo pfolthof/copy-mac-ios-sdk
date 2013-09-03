@@ -37,7 +37,7 @@
 @interface COCopyClient ()
 
 @property NSOperationQueue *connectionOperationQueue;
-@property COUpload *cancellableUpload;
+
 @end
 
 
@@ -361,7 +361,8 @@
     }];
 }
 
-- (void)downloadPath:(NSString *)path toFilePath:(NSString *)toFilePath withProgressBlock:(void (^)(long long downloadedSoFar, long long expectedContentLength))progressBlock andCompletionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
+- (CODownload *)downloadPath:(NSString *)path toFilePath:(NSString *)toFilePath withProgressBlock:(void (^)(long long downloadedSoFar, long long expectedContentLength))progressBlock andCompletionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
+    CODownload *download = [CODownload new];
     
     [self requestFileSystemListingForPath:path withCompletionBlock:^(BOOL success, NSError *error, NSDictionary *fileSystemListing) {
         if (!success) {
@@ -378,7 +379,6 @@
         [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
         [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
         
-        CODownload *download = [CODownload new];
         [download downloadRequest:urlRequest toFilePath:toFilePath withSize:[fileSystemListing[@"size"] longLongValue] andProgressBlock:progressBlock andCompletionBlock:^(BOOL success, NSError *error) {
             CODownload *downloadRef = download; // keep reference to download
             
@@ -387,9 +387,11 @@
             downloadRef = nil; // release reference to download (unneccesary, but prevents compiler warning about unused variable)
         }];
     }];
+    
+    return download;
 }
 
-- (void)uploadFilePath:(NSString *)filePath toPath:(NSString *)path withProgressBlock:(void (^)(long long uploadedSoFar, long long contentLength))progressBlock andCompletionBlock:(void (^)(BOOL success, NSError *error, NSDictionary *fileInfo))completionBlock {
+- (COUpload *)uploadFilePath:(NSString *)filePath toPath:(NSString *)path withProgressBlock:(void (^)(long long uploadedSoFar, long long contentLength))progressBlock andCompletionBlock:(void (^)(BOOL success, NSError *error, NSDictionary *fileInfo))completionBlock {
     NSString *fileURL = [NSString stringWithFormat:@"https://api.copy.com/rest/files"];
     NSURL *url = [[NSURL URLWithString:fileURL] URLByAppendingPathComponent:[path stringByDeletingLastPathComponent]];
     
@@ -472,99 +474,8 @@
         
         uploadRef = nil; // release reference to upload (unneccesary, but prevents compiler warning about unused variable)
     }];
-}
-
-- (void)cancellableUploadFromFilePath:(NSString *)filePath
-                         toRemotePath:(NSString *)path withProgressBlock:(void (^)(long long uploadedSoFar, long long contentLength))progressBlock
-                   andCompletionBlock:(void (^)(BOOL success, NSError *error, NSDictionary *fileInfo))completionBlock {
-
-        NSString *fileURL = [NSString stringWithFormat:@"https://api.copy.com/rest/files"];
-        NSURL *url = [[NSURL URLWithString:fileURL] URLByAppendingPathComponent:[path stringByDeletingLastPathComponent]];
-        
-        // determine mime type
-        CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, (__bridge CFStringRef)[path pathExtension], NULL);
-        NSString *mimeType = (__bridge NSString *)(UTTypeCopyPreferredTagWithClass (UTI, kUTTagClassMIMEType));
-        
-        if (mimeType == nil) mimeType = @"application/octet-stream";
-        
-        // Write the multipart request including file data to a temporary file so NSURLConnection can stream the thing without keeping it all in memory
-        NSString *boundary = [NSString stringWithFormat:@"CopySDK%@", [COCopyClient uuidString]];
-        
-        NSString *authorization = [COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret];
-        
-        NSString *tempHTTPBodyFile = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%@", path.lastPathComponent, [COCopyClient uuidString]]];
-        
-        [[NSFileManager defaultManager] createFileAtPath:tempHTTPBodyFile contents:nil attributes:nil];
-        
-        // long long fileSize = [[NSFileManager defaultManager] attributesOfItemAtPath:filePath error:nil].fileSize;
-        
-        NSFileHandle *httpBodyFileHandle = [NSFileHandle fileHandleForWritingAtPath:tempHTTPBodyFile];
-        
-        [httpBodyFileHandle writeData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
-        [httpBodyFileHandle writeData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"filename\"\r\n\r\n%@\r\n", path.lastPathComponent] dataUsingEncoding:NSUTF8StringEncoding]];
-        
-        [httpBodyFileHandle writeData:[[NSString stringWithFormat:@"--%@\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
-        [httpBodyFileHandle writeData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"file\"; filename=\"%@\"\r\n", path.lastPathComponent] dataUsingEncoding:NSUTF8StringEncoding]];
-        [httpBodyFileHandle writeData:[[NSString stringWithFormat:@"Content-Type: %@\r\n", mimeType] dataUsingEncoding:NSUTF8StringEncoding]];
-        // [httpBodyFileHandle writeData:[[NSString stringWithFormat:@"Content-Size: %lld\r\n", fileSize] dataUsingEncoding:NSUTF8StringEncoding]];
-        [httpBodyFileHandle writeData:[@"\r\n" dataUsingEncoding:NSUTF8StringEncoding]];
-        
-        NSFileHandle *fileHandle = [NSFileHandle fileHandleForReadingAtPath:filePath];
-        
-        NSUInteger chunkSize = 1024 * 64;
-        
-        NSData *data;
-        while ((data = [fileHandle readDataOfLength:chunkSize]) && data.length > 0) {
-            [httpBodyFileHandle writeData:data];
-        }
-        
-        [fileHandle closeFile];
-        
-        [httpBodyFileHandle writeData:[[NSString stringWithFormat:@"\r\n--%@--\r\n", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
-        
-        [httpBodyFileHandle closeFile];
-        
-        long long httpBodySize = [[NSFileManager defaultManager] attributesOfItemAtPath:tempHTTPBodyFile error:nil].fileSize;
-        
-        NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
-        [urlRequest setHTTPMethod:@"POST"];
-        [urlRequest setValue:authorization forHTTPHeaderField:@"Authorization"];
-        [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
-        [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-        [urlRequest setValue:[NSString stringWithFormat:@"multipart/form-data; charset=utf-8; boundary=%@", boundary] forHTTPHeaderField:@"Content-Type"];
-        // [urlRequest setValue:[NSString stringWithFormat:@"%lld", httpBodySize] forHTTPHeaderField:@"Content-Size"];
-        [urlRequest setValue:@"close" forHTTPHeaderField:@"Connection"];
-        
-        // does not currently work because this enables Transfer-Encoding: Chunked, which resuls in errors
-        // todo: close stream in completionBlock?
-        // NSInputStream *inputStream = [NSInputStream inputStreamWithFileAtPath:tempHTTPBodyFile];
-        // [urlRequest setHTTPBodyStream:inputStream];
-        [urlRequest setHTTPBody:[NSData dataWithContentsOfFile:tempHTTPBodyFile]];
-        
-        self.cancellableUpload = [COUpload new];
-        [_cancellableUpload uploadRequest:urlRequest withSize:httpBodySize andProgressBlock:progressBlock andCompletionBlock:^(BOOL success, NSError *error, NSData *responseData) {
-            COUpload *uploadRef = _cancellableUpload; // keep reference to upload
-            
-            [[NSFileManager defaultManager] removeItemAtPath:tempHTTPBodyFile error:nil];
-            
-            NSDictionary *fileInfo = nil;
-            
-            @try {
-                fileInfo = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
-            }
-            @catch (NSException *exception) {
-                // ignore
-            }
-            
-            completionBlock(success, error, fileInfo);
-            
-            uploadRef = nil; // release reference to upload (unneccesary, but prevents compiler warning about unused variable)
-        }];
     
-}
-
-- (void)cancelCurrentUpload {
-    [self.cancellableUpload cancel];
+    return upload;
 }
 
 - (void)createFolder:(NSString *)path withCompletionBlock:(void (^)(BOOL success, NSError *error, NSDictionary *folderInfo))completionBlock {

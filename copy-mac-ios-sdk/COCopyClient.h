@@ -24,6 +24,10 @@ typedef enum {
 } COThumnailSize;
 
 
+@class CODownload;
+@class COUpload;
+
+
 @interface COCopyClient : NSObject
 
 @property NSString *oAuthToken;
@@ -57,23 +61,16 @@ typedef enum {
 - (void)requestActivityForPath:(NSString *)path modifiedTime:(NSNumber *)modifiedTime
            withCompletionBlock:(void (^)(BOOL success, NSError *error, NSDictionary *activityInfo))completionBlock;
 
-// download / upload
+// download / upload - to cancel, the send the cancel message to the returned CODownload / COUpload
 
-- (void)downloadPath:(NSString *)path
+- (CODownload *)downloadPath:(NSString *)path
           toFilePath:(NSString *)toFilePath
    withProgressBlock:(void (^)(long long downloadedSoFar, long long expectedContentLength))progressBlock
   andCompletionBlock:(void (^)(BOOL success, NSError *error))completionBlock;
 
-- (void)uploadFilePath:(NSString *)filePath
+- (COUpload *)uploadFilePath:(NSString *)filePath
                 toPath:(NSString *)path withProgressBlock:(void (^)(long long uploadedSoFar, long long contentLength))progressBlock
     andCompletionBlock:(void (^)(BOOL success, NSError *error, NSDictionary *fileInfo))completionBlock;
-
-
-- (void)cancellableUploadFromFilePath:(NSString *)filePath
-                toRemotePath:(NSString *)path withProgressBlock:(void (^)(long long uploadedSoFar, long long contentLength))progressBlock
-    andCompletionBlock:(void (^)(BOOL success, NSError *error, NSDictionary *fileInfo))completionBlock;
-
--(void)cancelCurrentUpload;
 
 // create folder
 
