@@ -17,18 +17,6 @@
 
 #import "NSString+URLEncoding.h"
 
-
-#error follow these steps and fill in the COPY_CONSUMER_KEY and COPY_SECRET, then remove this line
-
-// 1. create a www.copy.com user account (if you do not already have one): https://www.copy.com/signup/
-// 2. create a developer account: https://www.copy.com/developer/signup/
-// 3. create an application: https://www.copy.com/developer/create/
-// 4. replace <consumer key> and <secret>
-
-#define COPY_CONSUMER_KEY @"<consumer key>"
-#define COPY_SECRET @"<secret>"
-
-
 // oAuth callback URL to be recognized on successful authorization
 
 #define OAUTH_CALLBACK @"http://www.cloud-cdr.com"
@@ -83,23 +71,23 @@
     return dict;
 }
 
-+ (NSString *)authorizationForAuthentication {
+- (NSString *)authorizationForAuthentication {
     return [NSString stringWithFormat:@"OAuth oauth_version=\"1.0\", oauth_signature_method=\"PLAINTEXT\", oauth_consumer_key=\"%@\", oauth_signature=\"%@&\", oauth_nonce=\"%@\", oauth_timestamp=\"%f\"",
-            COPY_CONSUMER_KEY,
-            COPY_SECRET,
-            [self uuidString],
+            self.apiKey,
+            self.apiSecret,
+            [COCopyClient uuidString],
             [[NSDate date] timeIntervalSince1970]];
     
 }
 
-+ (NSString *)authorizationForToken:(NSString *)token
+- (NSString *)authorizationForToken:(NSString *)token
                      andTokenSecret:(NSString *)tokenSecret {
     return [NSString stringWithFormat:@"OAuth oauth_version=\"1.0\", oauth_signature_method=\"PLAINTEXT\", oauth_consumer_key=\"%@\", oauth_token=\"%@\", oauth_signature=\"%@&%@\", oauth_nonce=\"%@\", oauth_timestamp=\"%f\"",
-            COPY_CONSUMER_KEY,
+            self.apiKey,
             token,
-            COPY_SECRET,
+            self.apiSecret,
             tokenSecret,
-            [self uuidString],
+            [COCopyClient uuidString],
             [[NSDate date] timeIntervalSince1970]];
 
 }
@@ -110,6 +98,8 @@
     if (self = [super init]) {
         self.connectionOperationQueue = [NSOperationQueue new];
         self.connectionOperationQueue.maxConcurrentOperationCount = 2;
+        self.oAuthTokenRedirectUri = OAUTH_CALLBACK;
+        
     }
     
     return self;
@@ -136,7 +126,7 @@
                                  [COCopyClient queryStringFromParameters:@{@"oauth_callback":OAUTH_CALLBACK, @"scope":scope.scopeJSON}]];
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:oAuthRequestURL]];
-    [urlRequest setValue:[COCopyClient authorizationForAuthentication] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForAuthentication] forHTTPHeaderField:@"Authorization"];
     
     [NSURLConnection sendAsynchronousRequest:urlRequest queue:self.connectionOperationQueue completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
         if (error != nil) {
@@ -168,7 +158,7 @@
                                                 [COCopyClient queryStringFromParameters:@{@"oauth_verifier":callbackParameters[@"oauth_verifier"]}]];
                     
                     NSMutableURLRequest *accessUrlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:oAuthAccessURL]];
-                    [accessUrlRequest setValue:[COCopyClient authorizationForToken:callbackParameters[@"oauth_token"] andTokenSecret:oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+                    [accessUrlRequest setValue:[self authorizationForToken:callbackParameters[@"oauth_token"] andTokenSecret:oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
                     
                     [NSURLConnection sendAsynchronousRequest:accessUrlRequest queue:weakSelf.connectionOperationQueue completionHandler:^(NSURLResponse *accessResponse, NSData *accessData, NSError *accessError) {
                         if (accessError != nil) {
@@ -198,7 +188,7 @@
     NSString *userURL = [NSString stringWithFormat:@"https://api.copy.com/rest/user"];
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:userURL]];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
 
@@ -227,7 +217,7 @@
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:userURL]];
     [urlRequest setHTTPMethod:@"PUT"];
     [urlRequest setHTTPBody:[NSJSONSerialization dataWithJSONObject:userInfo options:0 error:nil]];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -254,7 +244,7 @@
     NSString *metaURL = [NSString stringWithFormat:@"https://api.copy.com/rest/meta"];
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:metaURL]];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -282,7 +272,7 @@
     NSURL *url = [[NSURL URLWithString:metaURL] URLByAppendingPathComponent:path];
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -310,7 +300,7 @@
     NSURL *url = [[[NSURL URLWithString:metaURL] URLByAppendingPathComponent:path] URLByAppendingPathComponent:@"@activity"];
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -338,7 +328,7 @@
     NSURL *url = [[[[NSURL URLWithString:metaURL] URLByAppendingPathComponent:path] URLByAppendingPathComponent:@"@activity"] URLByAppendingPathComponent:[NSString stringWithFormat:@"@time:%@",modifiedTime]];
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -375,7 +365,7 @@
         NSURL *url = [[NSURL URLWithString:fileURL] URLByAppendingPathComponent:path];
         
         NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
-        [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+        [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
         [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
         [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
         
@@ -404,7 +394,7 @@
     // Write the multipart request including file data to a temporary file so NSURLConnection can stream the thing without keeping it all in memory
     NSString *boundary = [NSString stringWithFormat:@"CopySDK%@", [COCopyClient uuidString]];
     
-    NSString *authorization = [COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret];
+    NSString *authorization = [self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret];
     
     NSString *tempHTTPBodyFile = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%@", path.lastPathComponent, [COCopyClient uuidString]]];
     
@@ -484,7 +474,7 @@
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
     [urlRequest setHTTPMethod:@"POST"];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -513,7 +503,7 @@
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
     [urlRequest setHTTPMethod:@"DELETE"];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -543,7 +533,7 @@
         
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
     [urlRequest setHTTPMethod:@"PUT"];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -573,7 +563,7 @@
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
     [urlRequest setHTTPMethod:@"PUT"];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -602,7 +592,7 @@
     url = [NSURL URLWithString:[NSString stringWithFormat:@"%@?size=%d", url.absoluteString, size]];
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -623,7 +613,7 @@
     NSURL *url = [[NSURL URLWithString:metaURL] URLByAppendingPathComponent:token];
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -651,7 +641,7 @@
     NSURL *url = [[NSURL URLWithString:metaURL] URLByAppendingPathComponent:token];
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -679,7 +669,7 @@
     NSURL *url = [NSURL URLWithString:metaURL];
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -708,7 +698,7 @@
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
     [urlRequest setHTTPMethod:@"POST"];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -741,7 +731,7 @@
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
     [urlRequest setHTTPMethod:@"PUT"];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
@@ -778,7 +768,7 @@
     
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:url];
     [urlRequest setHTTPMethod:@"DELETE"];
-    [urlRequest setValue:[COCopyClient authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
+    [urlRequest setValue:[self authorizationForToken:self.oAuthToken andTokenSecret:self.oAuthTokenSecret] forHTTPHeaderField:@"Authorization"];
     [urlRequest setValue:@"1" forHTTPHeaderField:@"X-Api-Version"];
     [urlRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     
