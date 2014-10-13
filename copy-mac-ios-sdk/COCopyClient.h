@@ -30,8 +30,11 @@ typedef enum {
 
 @interface COCopyClient : NSObject
 
-@property NSString *oAuthToken;
-@property NSString *oAuthTokenSecret;
+@property (nonatomic, strong) NSString *oAuthToken;
+@property (nonatomic, strong) NSString *oAuthTokenSecret;
+@property (nonatomic, strong) NSString *oAuthTokenRedirectUri;
+@property (nonatomic, strong) NSString *apiKey;
+@property (nonatomic, strong) NSString *apiSecret;
 
 // use either init and authenticateWithScope or initWithToken to initialize oAuth token/secret
 
