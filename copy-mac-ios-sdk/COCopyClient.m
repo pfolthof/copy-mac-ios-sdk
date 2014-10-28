@@ -116,6 +116,20 @@
 
 #pragma mark Copy API
 
+- (NSError *)errorForBadResponse:(NSInteger)httpStatusCode data:(NSData *)data
+{
+    NSDictionary *errorData = nil;
+    
+    NSDictionary *responseErrorData = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
+    if (responseErrorData) {
+        errorData = @{@"code": responseErrorData[@"error"], @"error": responseErrorData[@"message"]};
+    } else {
+        errorData = @{@"status": @(httpStatusCode), @"error": [NSString stringWithFormat:@"Server returned status %ld", (long)httpStatusCode]};
+    }
+    
+    return [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:errorData];
+}
+
 - (void)authenticateWithScope:(COScope *)scope
               andShowURLBlock:(void (^)(NSURL *url, NSURLRequest *(^filterRequestBlock)(NSURLRequest *filterURLRequest)))showURLBlock
            andCompletionBlock:(void (^)(BOOL success, NSError *error))completionBlock {
@@ -201,7 +215,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -230,7 +244,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -257,7 +271,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -285,7 +299,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -313,7 +327,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -341,7 +355,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -487,7 +501,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -516,7 +530,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}]);
+                completionBlock(NO, [self errorForBadResponse:status data:data]);
                 
                 return;
             }
@@ -546,7 +560,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}]);
+                completionBlock(NO, [self errorForBadResponse:status data:data]);
                 
                 return;
             }
@@ -576,7 +590,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}]);
+                completionBlock(NO, [self errorForBadResponse:status data:data]);
                 
                 return;
             }
@@ -626,7 +640,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -654,7 +668,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -682,7 +696,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -715,7 +729,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -752,7 +766,7 @@
             if (status >= 400) {
                 NSLog(@"Warning - updateRecipients response: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
                 
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}], nil);
+                completionBlock(NO, [self errorForBadResponse:status data:data], nil);
                 
                 return;
             }
@@ -781,7 +795,7 @@
             NSInteger status = ((NSHTTPURLResponse *)response).statusCode;
             
             if (status >= 400) {
-                completionBlock(NO, [NSError errorWithDomain:@"nl.devoorkant.CopySDK" code:3 userInfo:@{@"error":[NSString stringWithFormat:@"Server returned status %ld", (long)status]}]);
+                completionBlock(NO, [self errorForBadResponse:status data:data]);
                 
                 return;
             }
